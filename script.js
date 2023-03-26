@@ -28,20 +28,64 @@ for (let i = 0; i < numbers.length; i++) {
   });
 }
 
+function addSpaces(value) {
+  value = value.toString().replaceAll(' ', '');
+  let isNegative = false;
+  if (value.indexOf('-') > -1) {
+    isNegative = true;
+    value = value.slice(1);
+  }
+
+  let secondPart = '';
+  let commaId = value.indexOf('.');
+  if (commaId > -1) {
+    secondPart = value.slice(commaId);
+    value = value.slice(0, commaId);
+  }
+
+  let n = Math.floor((value.length - 1) / 3);
+  let a = value.length % 3 || 3;
+
+  switch (n) {
+    case 1:
+      value = value.slice(0, a) + ' ' + value.slice(a);
+      break;
+    case 2:
+      value =
+        value.slice(0, a) +
+        ' ' +
+        value.slice(a, a + 3) +
+        ' ' +
+        value.slice(a + 3);
+      break;
+    default:
+      break;
+  }
+  value = value + secondPart;
+
+  if (isNegative) {
+    value = '-' + value;
+  }
+  return value;
+}
+
 // 2. Вывод первого значения
 // 2.1 Проверка на длину символов
 // 2.2 Проверка нуля
 // 2.3 Проверка на размер шрифта
 function getFirstValue(el) {
-  if (firstValue.toString().length < 9) {
+  firstValue = firstValue.toString().replaceAll(' ', '');
+  if (firstValue.replace('-', '').replace('.', '').length < 9) {
     if (firstValue == '0') {
       firstValue = el;
     } else {
       firstValue += el;
     }
+
+    firstValue = addSpaces(firstValue);
     result.innerHTML = firstValue;
 
-    scaleFontSize(firstValue.toString().length);
+    scaleFontSize(firstValue);
   }
 }
 
@@ -51,8 +95,12 @@ function getFirstValue(el) {
 // 3.4 Проверка на размер шрифта
 // 3.3 Проверка ввода первого значения после получения результата
 function getSecondValue(el) {
-  if (secondValue.toString().length < 9 && firstValue) {
+  secondValue = secondValue.toString().replaceAll(' ', '');
+  if (secondValue.replace('-', '').replace('.', '').length < 9) {
     if (sign) {
+      if (firstValue === '') {
+        firstValue = 0;
+      }
       if (secondValue == '0') {
         secondValue = el;
         isFirstValue = true;
@@ -61,10 +109,11 @@ function getSecondValue(el) {
         isFirstValue = true;
       }
 
+      secondValue = addSpaces(secondValue);
       result.innerHTML = secondValue;
 
-      scaleFontSize(secondValue.toString().length);
-    } else if (resultValue) {
+      scaleFontSize(secondValue);
+    } else if (resultValue !== '') {
       firstValue = '';
       resultValue = '';
       isFirstValue = false;
@@ -104,12 +153,12 @@ equals.addEventListener('click', () => {
 // 6.5 Проверка на длину цифр и длину цифр после запятой
 // 6.6 Проверка на размер шрифта
 function getResult() {
-  if (sign && !secondValue) {
+  if (sign && secondValue === '') {
     secondValue = firstValue;
   }
 
-  firstValue = Number(firstValue);
-  secondValue = Number(secondValue);
+  firstValue = Number(firstValue.toString().replaceAll(' ', ''));
+  secondValue = Number(secondValue.toString().replaceAll(' ', ''));
 
   if (sign === '/') {
     resultValue = firstValue / secondValue;
@@ -125,17 +174,20 @@ function getResult() {
 
   if (resultValue.toString().length > 9) {
     resultValue = Number(resultValue).toExponential(5);
+  } else {
+    resultValue = addSpaces(resultValue);
   }
 
   result.innerHTML = resultValue;
   firstValue = resultValue;
   secondValue = '';
 
-  scaleFontSize(firstValue.toString().length);
+  scaleFontSize(firstValue);
 }
 
 // 7. Вывод определённого размера шрифта
 function scaleFontSize(num) {
+  num = num.toString().replaceAll(' ', '').length;
   result.style.fontSize = '100px';
 
   if (num > 5) {
@@ -158,7 +210,7 @@ comma.addEventListener('click', () => {
   result.innerHTML = '';
   if (!isFirstValue) {
     if (firstValue.toString().indexOf('.') == -1) {
-      if (!firstValue) {
+      if (firstValue === '') {
         firstValue = 0 + '.';
       } else {
         firstValue = firstValue + '.';
@@ -167,7 +219,7 @@ comma.addEventListener('click', () => {
     result.innerHTML = firstValue;
   } else {
     if (secondValue.toString().indexOf('.') == -1) {
-      if (!secondValue) {
+      if (secondValue === '') {
         secondValue = 0 + '.';
       } else {
         secondValue = secondValue + '.';
@@ -187,37 +239,45 @@ clear.addEventListener('click', () => {
   sign = '';
   resultValue = 0;
 
-  scaleFontSize(resultValue.toString().length);
+  scaleFontSize(resultValue);
 });
 
 // 10. Смена знака
 // 10.1 Проверка размера шрифта
 negative.addEventListener('click', () => {
-  if (firstValue && !secondValue) {
-    resultValue = -firstValue;
+  if (firstValue !== '' && secondValue === '') {
+    if (firstValue.toString().indexOf('-') == -1) {
+      resultValue = '-' + addSpaces(firstValue);
+    } else {
+      resultValue = firstValue.slice(1);
+    }
     firstValue = resultValue;
   }
 
-  if (secondValue) {
-    resultValue = -secondValue;
+  if (secondValue !== '') {
+    if (secondValue.toString().indexOf('-') == -1) {
+      resultValue = '-' + addSpaces(secondValue);
+    } else {
+      resultValue = secondValue.slice(1);
+    }
     secondValue = resultValue;
   }
 
   result.innerHTML = resultValue;
 
-  scaleFontSize(resultValue.toString().length);
+  scaleFontSize(resultValue);
 });
 
 // 11. Вывод процента
 // 11.1 Проверка на длину цифр и длину цифр после запятой
 // 11.2 Проверка размера шрифта
 percent.addEventListener('click', () => {
-  if (firstValue) {
+  if (firstValue !== '') {
     resultValue = firstValue / 100;
     firstValue = resultValue;
   }
 
-  if (secondValue) {
+  if (secondValue !== '') {
     resultValue = secondValue / 100;
     secondValue = resultValue;
   }
@@ -228,5 +288,5 @@ percent.addEventListener('click', () => {
 
   result.innerHTML = resultValue;
 
-  scaleFontSize(resultValue.toString().length);
+  scaleFontSize(resultValue);
 });
